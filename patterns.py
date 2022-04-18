@@ -2,7 +2,7 @@ import math
 import csv
 import pandas as pd
 import numpy as np
-
+import itertools
 
 
 # DO NOT CHANGE THE FOLLOWING LINE
@@ -14,44 +14,56 @@ def apriori(itemsets, threshold):
     
     #first I guess we figure out how to pull all sets?
 
-    #declare a set to store what we want to return (a list of sets, each set has frequent itemset and support)
-    listOfSets = []
+    #declare a set to store what we want to return (frequencies, after everything is empty)
+    oldFrequencies = {}
+
+    #track frequencies of things
+    frequencies = {}
 
     #track the number of items?
-    numberOfItems = 0
-
-    #track if the item has found a match?
-    validMatch = 0
+    totalItems = 0
 
     #Look at every individual item first
-    for set in itemsets:
-        for item in set:
-            numberOfItems = numberOfItems + 1
-            #if the item is not in listOfSets, then add it, if the item is in the list, keep track of it
-            for things in listOfSets:
-                #if the item matches, add 1 to its count
-                if item == things[0]:
-                    things[1] = things[1] + 1
-                    validMatch = 1
-            #if the item does not match at the end
-            if validMatch == 0:
-                #append with item, 1 because this is the first instance of that item
-                listOfSets.append([item, 1])
+
+    #for each itemset in the list of itemsets, do this
+    for itemset in itemsets:
+        #for each item in the itemset, do this
+        for item in itemset:
+            #increment totalItems so we know how many there are
+            totalItems = totalItems + 1
+            
+            #if this item already exists in frequencies, increment; if not, make it and set it to 1
+            if item in frequencies:
+                frequencies[item] += 1
+            else:
+                frequencies[item] = 1
+
+
                     
                 
-    print (listOfSets)
-    print (numberOfItems)
-    #divide every value inside of listOfSets by numberOfItems to get support
-    for things in listOfSets: 
-        things[1] = things[1] / numberOfItems
-    
-    print(listOfSets)
+    print (frequencies)
+    print (totalItems)
+
+    #divide every value inside of frequencies by numberOfItems to get support
+    for item in list(frequencies.keys()):
+        frequencies[item] = frequencies[item] / totalItems
+        #purge anything that has less frequency than our threshold
+        if frequencies[item] < threshold:
+            oldFrequencies[item] = frequencies.pop(item)
 
     
+    print(frequencies)
+
+    #purge anything that has less frequency than our threshold
+    
 
 
 
-    return listOfSets
+    #ok now we use itertools to get all the combinations
+    itertools.combinations(frequencies.items(), 2)
+
+
+    return oldFrequencies
 
     
 # DO NOT CHANGE THE FOLLOWING LINE
@@ -72,7 +84,7 @@ def main():
                              "thousand", "approach", "intrusion", "suddenly", "obscure", "island", "ionic",
                              "oust", "obstinate", "foiled", "oily", "spoilers"]
     letters = list(map(set, words))                         
-    apriori(letters, 0)
+    apriori(letters, .05)
 
 if __name__ == '__main__':
     main()
