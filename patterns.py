@@ -20,47 +20,59 @@ def apriori(itemsets, threshold):
     #track frequencies of things
     frequencies = {}
 
-    #track the number of items?
-    totalItems = 0
-
     #Look at every individual item first
 
     #for each itemset in the list of itemsets, do this
     for itemset in itemsets:
         #for each item in the itemset, do this
         for item in itemset:
-            #increment totalItems so we know how many there are
-            totalItems = totalItems + 1
             
             #if this item already exists in frequencies, increment; if not, make it and set it to 1
-            if item in frequencies:
-                frequencies[item] += 1
+            if frozenset(item) in frequencies:
+                frequencies[frozenset(item)] += 1
             else:
-                frequencies[item] = 1
+                frequencies[frozenset(item)] = 1
 
 
-                    
-                
     print (frequencies)
-    print (totalItems)
+
 
     #divide every value inside of frequencies by numberOfItems to get support
     for item in list(frequencies.keys()):
-        frequencies[item] = frequencies[item] / totalItems
+        frequencies[item] = frequencies[item] / len(itemsets)
         #purge anything that has less frequency than our threshold
         if frequencies[item] < threshold:
             oldFrequencies[item] = frequencies.pop(item)
 
-    
     print(frequencies)
-
-    #purge anything that has less frequency than our threshold
+    print(oldFrequencies)
     
-
-
-
     #ok now we use itertools to get all the combinations
-    itertools.combinations(frequencies.items(), 2)
+    kitemsets = [a | b for a, b in itertools.combinations(frequencies.keys(), 2)]
+
+    print(kitemsets)
+
+    for itemset in itemsets:
+        for kitemset in kitemsets:
+            if kitemset.issubset(itemset):
+                if frozenset(kitemset) in frequencies:
+                    frequencies[frozenset(kitemset)] += 1
+                else:
+                    frequencies[frozenset(kitemset)] = 1
+
+    print(frequencies)
+    
+            
+            
+
+
+
+
+
+
+
+
+
 
 
     return oldFrequencies
@@ -84,7 +96,7 @@ def main():
                              "thousand", "approach", "intrusion", "suddenly", "obscure", "island", "ionic",
                              "oust", "obstinate", "foiled", "oily", "spoilers"]
     letters = list(map(set, words))                         
-    apriori(letters, .05)
+    apriori(letters, .5)
 
 if __name__ == '__main__':
     main()
