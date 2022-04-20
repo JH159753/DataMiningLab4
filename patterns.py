@@ -38,32 +38,18 @@ def apriori(itemsets, threshold):
                 frequencies[frozenset(item)] = 1
 
 
-    print (frequencies)
+    #let's break this down:
+    #frequencies is set to itself with the same keys (except for the filtered ones where the frequency is too low for the threshold)
+    #and the values assigned to the keys are set to frequency / amount of itemsets we're looking at
+    frequencies = {itemset: freq / len(itemsets) for itemset, freq in frequencies.items() if freq / len(itemsets) >= threshold}
 
-
-    #divide every value inside of frequencies by numberOfItems to get support
-    for item in list(frequencies.keys()):
-        frequencies[item] = frequencies[item] / len(itemsets)
-        #purge anything that has less frequency than our threshold
-        if frequencies[item] < threshold:
-            frequencies.pop(item)
-
-    print("before")
-    print(frequencies)
-    print(oldFrequencies)
     #if frequencies is empty, return oldFrequencies
     if len(frequencies) == 0:
-        return oldFrequencies
+        return oldFrequencies.items()
     #if it is not empty, purge oldFrequencies and then move frequencies' data into it
     else:
         oldFrequencies = frequencies
         frequencies = {}
-    
-    print("after")
-    print(frequencies)
-    print(oldFrequencies)
-    print("disregard")
-    
 
     while True:
         #ok now we use itertools to get all the combinations
@@ -72,15 +58,8 @@ def apriori(itemsets, threshold):
         #we want to increment ksize now
         ksize += 1
 
-        print("before purging wrong size")
-        print(allCombinationSets)
-
         #make a new list that *only* includes correct size and no duplicates
         kitemsets = list(set([combinationSet for combinationSet in allCombinationSets if len(combinationSet) == ksize]))
-
-        print("after purging wrong size")
-        print (kitemsets)
-        print("test")
 
         for itemset in itemsets:
             for kitemset in kitemsets:
@@ -90,22 +69,14 @@ def apriori(itemsets, threshold):
                     else:
                         frequencies[frozenset(kitemset)] = 1
 
-        print(frequencies)
-        
-
-
-        #divide every value inside of frequencies by numberOfItems to get support
-        for item in list(frequencies.keys()):
-            frequencies[item] = frequencies[item] / len(itemsets)
-            #purge anything that has less frequency than our threshold
-            if frequencies[item] < threshold:
-                frequencies.pop(item)
-                
-        print(frequencies)
+        #let's break this down:
+        #frequencies is set to itself with the same keys (except for the filtered ones where the frequency is too low for the threshold)
+        #and the values assigned to the keys are set to frequency / amount of itemsets we're looking at
+        frequencies = {itemset: freq / len(itemsets) for itemset, freq in frequencies.items() if freq / len(itemsets) >= threshold}
 
         #if frequencies is empty, return oldFrequencies
         if len(frequencies) == 0:
-            return oldFrequencies
+            return oldFrequencies.items()
         #if it is not empty, purge oldFrequencies and then move frequencies' data into it
         else:
             oldFrequencies = frequencies
