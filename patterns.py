@@ -20,6 +20,10 @@ def apriori(itemsets, threshold):
     #track frequencies of things
     frequencies = {}
 
+    #track the k-itemset size
+    #starts at 1 because why would we have empty sets
+    ksize = 1
+
     #Look at every individual item first
 
     #for each itemset in the list of itemsets, do this
@@ -42,40 +46,72 @@ def apriori(itemsets, threshold):
         frequencies[item] = frequencies[item] / len(itemsets)
         #purge anything that has less frequency than our threshold
         if frequencies[item] < threshold:
-            oldFrequencies[item] = frequencies.pop(item)
+            frequencies.pop(item)
 
+    print("before")
     print(frequencies)
     print(oldFrequencies)
+    #if frequencies is empty, return oldFrequencies
+    if len(frequencies) == 0:
+        return oldFrequencies
+    #if it is not empty, purge oldFrequencies and then move frequencies' data into it
+    else:
+        oldFrequencies = frequencies
+        frequencies = {}
     
-    #ok now we use itertools to get all the combinations
-    kitemsets = [a | b for a, b in itertools.combinations(frequencies.keys(), 2)]
-
-    print(kitemsets)
-
-    for itemset in itemsets:
-        for kitemset in kitemsets:
-            if kitemset.issubset(itemset):
-                if frozenset(kitemset) in frequencies:
-                    frequencies[frozenset(kitemset)] += 1
-                else:
-                    frequencies[frozenset(kitemset)] = 1
-
+    print("after")
     print(frequencies)
+    print(oldFrequencies)
+    print("disregard")
     
-            
-            
+
+    while True:
+        #ok now we use itertools to get all the combinations
+        allCombinationSets = [a | b for a, b in itertools.combinations(oldFrequencies.keys(), 2)]
+
+        #we want to increment ksize now
+        ksize += 1
+
+        print("before purging wrong size")
+        print(allCombinationSets)
+
+        #make a new list that *only* includes correct size and no duplicates
+        kitemsets = list(set([combinationSet for combinationSet in allCombinationSets if len(combinationSet) == ksize]))
+
+        print("after purging wrong size")
+        print (kitemsets)
+        print("test")
+
+        for itemset in itemsets:
+            for kitemset in kitemsets:
+                if kitemset.issubset(itemset):
+                    if frozenset(kitemset) in frequencies:
+                        frequencies[frozenset(kitemset)] += 1
+                    else:
+                        frequencies[frozenset(kitemset)] = 1
+
+        print(frequencies)
+        
 
 
+        #divide every value inside of frequencies by numberOfItems to get support
+        for item in list(frequencies.keys()):
+            frequencies[item] = frequencies[item] / len(itemsets)
+            #purge anything that has less frequency than our threshold
+            if frequencies[item] < threshold:
+                frequencies.pop(item)
+                
+        print(frequencies)
 
+        #if frequencies is empty, return oldFrequencies
+        if len(frequencies) == 0:
+            return oldFrequencies
+        #if it is not empty, purge oldFrequencies and then move frequencies' data into it
+        else:
+            oldFrequencies = frequencies
+            frequencies = {}
 
-
-
-
-
-
-
-
-    return oldFrequencies
+    
 
     
 # DO NOT CHANGE THE FOLLOWING LINE
