@@ -93,7 +93,91 @@ def association_rules(itemsets, frequent_itemsets, metric, metric_threshold):
     # Each entry (c,e,m) represents a rule c => e, with the matric value m
     # Rules should only be included if m is greater than the given threshold.    
     # e.g. [(set(condition),set(effect),0.45), ...]
-    return []
+
+    possibleRules = []
+    metricValue = 0
+    
+    
+    for itemset, frequency in frequent_itemsets:
+        #frequency is support(T)
+
+        #set currentPowerset to hold the stuff we are looking at right now
+        currentPowerset = list(powerset(itemset))
+
+        #for every antecedent in currentPowerset, do this
+        for antecedent in currentPowerset:
+
+            #probably calculate the consequence here, then after you have that, calculate the metric value based on the given metric
+            consequence = itemset.difference(antecedent)
+            
+            metricValue = calculateMetricValue(antecedent, consequence, frequency, itemsets, metric)
+
+            possibleRules.append([antecedent, consequence, metricValue])
+
+
+    #after getting all the possible rules, use list comprehension to clip anything below our given metric_threshold
+
+    actualRules = [possibleRule for possibleRule in possibleRules if possibleRule[2] > metric_threshold]
+            
+            
+
+
+    
+
+
+
+    return actualRules
+
+def calculateMetricValue(antecedent, consequence, frequency, itemsets, metric):
+    #frequency is support(T)
+    if metric == "lift":
+        #need P(B|A) and P(B) aka P(consequence|antecedent) and P(consequence)
+
+        #this is P(consequence) part
+        probB = 0
+        #for each itemset, check if the consequence is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            if consequence.issubset(itemset):
+                probB += 1
+        #at the end, divide by len(itemsets)
+        probB = probB / len(itemsets)
+
+        #this is P(antecedent) part
+        probA = 0
+        #for each itemset, check if the antecedent is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            #this is a bit spaghetti but since antecedent is a tuple and not a set, we need to do set() on it to use the .issubset function
+            if set(antecedent).issubset(itemset):
+                probA += 1
+        #at the end, divide by len(itemsets)
+        probA = probA / len(itemsets)
+
+        #this is P(consequence|antecedent) because support(T) / support(A) is that
+        return(frequency / probA)
+
+        
+        
+
+    #elif metric == "all":
+    
+    #elif metric == "max":
+
+    #elif metric == "kulczynski":
+
+    #elif metric == "cosine":
+
+    else:
+        print ("This is not a valid metric")
+
+    
+
+
+#steal powerset code from https://docs.python.org/3/library/itertools.html#itertools-recipes
+#slightly modified to not include empty set and full set
+def powerset(iterable):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(1, len(s)))
 
 
 def main():
@@ -103,7 +187,8 @@ def main():
                              "thousand", "approach", "intrusion", "suddenly", "obscure", "island", "ionic",
                              "oust", "obstinate", "foiled", "oily", "spoilers"]
     letters = list(map(set, words))                         
-    apriori(letters, .5)
+    apriori(letters, .1)
+    print(association_rules(letters, apriori(letters, .1), "lift", .5))
 
 if __name__ == '__main__':
     main()
