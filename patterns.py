@@ -112,19 +112,12 @@ def association_rules(itemsets, frequent_itemsets, metric, metric_threshold):
             
             metricValue = calculateMetricValue(antecedent, consequence, frequency, itemsets, metric)
 
-            possibleRules.append([antecedent, consequence, metricValue])
+            possibleRules.append([set(antecedent), consequence, metricValue])
 
 
     #after getting all the possible rules, use list comprehension to clip anything below our given metric_threshold
 
     actualRules = [possibleRule for possibleRule in possibleRules if possibleRule[2] > metric_threshold]
-            
-            
-
-
-    
-
-
 
     return actualRules
 
@@ -152,19 +145,129 @@ def calculateMetricValue(antecedent, consequence, frequency, itemsets, metric):
         #at the end, divide by len(itemsets)
         probA = probA / len(itemsets)
 
-        #this is P(consequence|antecedent) because support(T) / support(A) is that
-        return(frequency / probA)
+        #make sure we don't run into dividing by 0 issues
+        if (probA == 0 or probB == 0):
+            return 0
+        #this is P(consequence|antecedent) because support(T) / support(A) is that, divided by prob(B)
+        return((frequency / probA) / probB)
 
         
+    elif metric == "all":
+        #need P(B|A) and P(B) aka P(consequence|antecedent) and P(consequence)
+
+        #this is P(consequence) part
+        probB = 0
+        #for each itemset, check if the consequence is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            if consequence.issubset(itemset):
+                probB += 1
+        #at the end, divide by len(itemsets)
+        probB = probB / len(itemsets)
+
+        #this is P(antecedent) part
+        probA = 0
+        #for each itemset, check if the antecedent is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            #this is a bit spaghetti but since antecedent is a tuple and not a set, we need to do set() on it to use the .issubset function
+            if set(antecedent).issubset(itemset):
+                probA += 1
+        #at the end, divide by len(itemsets)
+        probA = probA / len(itemsets)
+
+        #make sure we don't run into dividing by 0 issues
+        if (probA == 0 or probB == 0):
+            return 0
+
+        #with P(B) and P(A) and P(T) calculate P(A|B) and P(B|A)
+        return min((frequency / probA), (frequency / probB))
+
         
+    elif metric == "max":
+        #need P(B|A) and P(B) aka P(consequence|antecedent) and P(consequence)
 
-    #elif metric == "all":
-    
-    #elif metric == "max":
+        #this is P(consequence) part
+        probB = 0
+        #for each itemset, check if the consequence is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            if consequence.issubset(itemset):
+                probB += 1
+        #at the end, divide by len(itemsets)
+        probB = probB / len(itemsets)
 
-    #elif metric == "kulczynski":
+        #this is P(antecedent) part
+        probA = 0
+        #for each itemset, check if the antecedent is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            #this is a bit spaghetti but since antecedent is a tuple and not a set, we need to do set() on it to use the .issubset function
+            if set(antecedent).issubset(itemset):
+                probA += 1
+        #at the end, divide by len(itemsets)
+        probA = probA / len(itemsets)
 
-    #elif metric == "cosine":
+        #make sure we don't run into dividing by 0 issues
+        if (probA == 0 or probB == 0):
+            return 0
+
+        #with P(B) and P(A) and P(T) calculate P(A|B) and P(B|A)
+        return max((frequency / probA), (frequency / probB))
+
+    elif metric == "kulczynski":
+        #need P(B|A) and P(B) aka P(consequence|antecedent) and P(consequence)
+
+        #this is P(consequence) part
+        probB = 0
+        #for each itemset, check if the consequence is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            if consequence.issubset(itemset):
+                probB += 1
+        #at the end, divide by len(itemsets)
+        probB = probB / len(itemsets)
+
+        #this is P(antecedent) part
+        probA = 0
+        #for each itemset, check if the antecedent is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            #this is a bit spaghetti but since antecedent is a tuple and not a set, we need to do set() on it to use the .issubset function
+            if set(antecedent).issubset(itemset):
+                probA += 1
+        #at the end, divide by len(itemsets)
+        probA = probA / len(itemsets)
+
+        #make sure we don't run into dividing by 0 issues
+        if (probA == 0 or probB == 0):
+            return 0
+
+        #with P(B) and P(A) and P(T) calculate P(A|B) and P(B|A)
+        return ((frequency / probA)+(frequency / probB))/2
+    elif metric == "cosine":
+        #need P(B|A) and P(B) aka P(consequence|antecedent) and P(consequence)
+
+        #this is P(consequence) part
+        probB = 0
+        #for each itemset, check if the consequence is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            if consequence.issubset(itemset):
+                probB += 1
+        #at the end, divide by len(itemsets)
+        probB = probB / len(itemsets)
+
+        #this is P(antecedent) part
+        probA = 0
+        #for each itemset, check if the antecedent is a subset, if it is, increment, if not, do nothing
+        for itemset in itemsets:
+            #this is a bit spaghetti but since antecedent is a tuple and not a set, we need to do set() on it to use the .issubset function
+            if set(antecedent).issubset(itemset):
+                probA += 1
+        #at the end, divide by len(itemsets)
+        probA = probA / len(itemsets)
+
+        #make sure we don't run into dividing by 0 issues
+        if (probA == 0 or probB == 0):
+            return 0
+
+        #with P(B) and P(A) and P(T) calculate P(A|B) and P(B|A)
+        return ((frequency / probA)*(frequency / probB))**(.5)
+
 
     else:
         print ("This is not a valid metric")
@@ -187,8 +290,8 @@ def main():
                              "thousand", "approach", "intrusion", "suddenly", "obscure", "island", "ionic",
                              "oust", "obstinate", "foiled", "oily", "spoilers"]
     letters = list(map(set, words))                         
-    apriori(letters, .1)
-    print(association_rules(letters, apriori(letters, .1), "lift", .5))
+    apriori(letters, .3)
+    print(association_rules(letters, apriori(letters, .3), "lift", .71))
 
 if __name__ == '__main__':
     main()
