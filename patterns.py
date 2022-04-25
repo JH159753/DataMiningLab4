@@ -32,16 +32,17 @@ def apriori(itemsets, threshold):
         for item in itemset:
             
             #if this item already exists in frequencies, increment; if not, make it and set it to 1
-            if frozenset(item) in frequencies:
-                frequencies[frozenset(item)] += 1
+            if frozenset({item}) in frequencies:
+                frequencies[frozenset({item})] += 1
             else:
-                frequencies[frozenset(item)] = 1
+                frequencies[frozenset({item})] = 1
 
 
     #let's break this down:
     #frequencies is set to itself with the same keys (except for the filtered ones where the frequency is too low for the threshold)
     #and the values assigned to the keys are set to frequency / amount of itemsets we're looking at
-    frequencies = {itemset: freq / len(itemsets) for itemset, freq in frequencies.items() if freq / len(itemsets) >= threshold}
+    frequencies = {itemset: freq / len(itemsets) for itemset, freq in frequencies.items() if freq / len(itemsets) > threshold}
+
 
     #if frequencies is empty, return oldFrequencies
     if len(frequencies) == 0:
@@ -52,6 +53,7 @@ def apriori(itemsets, threshold):
         frequencies = {}
 
     while True:
+        
         #ok now we use itertools to get all the combinations
         allCombinationSets = [a | b for a, b in itertools.combinations(oldFrequencies.keys(), 2)]
 
@@ -72,7 +74,7 @@ def apriori(itemsets, threshold):
         #let's break this down:
         #frequencies is set to itself with the same keys (except for the filtered ones where the frequency is too low for the threshold)
         #and the values assigned to the keys are set to frequency / amount of itemsets we're looking at
-        frequencies = {itemset: freq / len(itemsets) for itemset, freq in frequencies.items() if freq / len(itemsets) >= threshold}
+        frequencies = {itemset: freq / len(itemsets) for itemset, freq in frequencies.items() if freq / len(itemsets) > threshold}
 
         #if frequencies is empty, return oldFrequencies
         if len(frequencies) == 0:
@@ -282,6 +284,18 @@ def powerset(iterable):
     s = list(iterable)
     return itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(1, len(s)))
 
+#stealing from testcases to test my data
+def to_set(row):
+    result = set()
+    for x in ["x1", "x2", "x3", "x4"]:
+        if row[x] > 0.5:
+            result.add(x)
+    for c in ["cat1", "cat2", "cat3", "cat4"]:
+        result.add(c + row[c])
+    for b in ["bin1", "bin2", "bin3", "bin4", "bin5"]:
+        if row[b] == "true":
+            result.add(b)
+    return result
 
 def main():
     words = ["loquacious", "insidious", "ferocious", "plausible", "atrocious",
@@ -289,9 +303,16 @@ def main():
                              "ambitious", "suspicious", "contentious", "curious", "guarded", "elusive",
                              "thousand", "approach", "intrusion", "suddenly", "obscure", "island", "ionic",
                              "oust", "obstinate", "foiled", "oily", "spoilers"]
-    letters = list(map(set, words))                         
-    apriori(letters, .3)
-    print(association_rules(letters, apriori(letters, .3), "lift", .71))
+    #letters = list(map(set, words))                         
+    #apriori(letters, .3)
+    #print(association_rules(letters, apriori(letters, .3), "lift", .71))
+
+
+    df = pd.read_csv("testdata.csv")
+    data = [to_set(item) for (idx,item) in df.iterrows()]
+    apriori(data, 0.05)
+    
+        
 
 if __name__ == '__main__':
     main()
