@@ -284,17 +284,9 @@ def powerset(iterable):
     s = list(iterable)
     return itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(1, len(s)))
 
-#stealing from testcases to test my data
+
 def to_set(row):
-    result = set()
-    for x in ["x1", "x2", "x3", "x4"]:
-        if row[x] > 0.5:
-            result.add(x)
-    for c in ["cat1", "cat2", "cat3", "cat4"]:
-        result.add(c + row[c])
-    for b in ["bin1", "bin2", "bin3", "bin4", "bin5"]:
-        if row[b] == "true":
-            result.add(b)
+    result = set(row[1].split(";"))
     return result
 
 def main():
@@ -308,9 +300,12 @@ def main():
     #print(association_rules(letters, apriori(letters, .3), "lift", .71))
 
 
-    df = pd.read_csv("testdata.csv")
+    df = pd.read_csv("recipes.csv")
     data = [to_set(item) for (idx,item) in df.iterrows()]
-    apriori(data, 0.05)
+    
+    print(data)
+    print(apriori(data, 0.005))
+    print(association_rules(data, apriori(data, .005), "max", .05))
     
         
 
